@@ -449,18 +449,23 @@ int calldmrg(char* input, char* output)
 	partialsweepDMRG(sweep_tol);
     else {
       if (RESTART && !FULLRESTART)
-	restart(sweep_tol, reset_iter);
+      {
+	      restart(sweep_tol, reset_iter);
+        cout<<"RESTART && !FULLRESTART\n" ;
+      }
       else if (FULLRESTART) {
-	fullrestartGenblock();
-	reset_iter = true;
-	sweepParams.restorestate(direction, restartsize);
+        fullrestartGenblock();
+        reset_iter = true;
+        sweepParams.restorestate(direction, restartsize);
 
-	if (!direction) {
-	  double last_fe = Sweep::do_one(sweepParams, false, direction, true, restartsize);
-	}
-	sweepParams.calc_niter();
-	sweepParams.savestate(direction, restartsize);
-	restart(sweep_tol, reset_iter);
+        if (!direction) {
+          double last_fe = Sweep::do_one(sweepParams, false, direction, true, restartsize);
+          cout<<"!direction\n";
+        }
+        sweepParams.calc_niter();
+        sweepParams.savestate(direction, restartsize);
+        restart(sweep_tol, reset_iter);
+        cout<<"FULLRESTART\n";
       }
       else if (BACKWARD) {
 	fullrestartGenblock();
@@ -469,9 +474,14 @@ int calldmrg(char* input, char* output)
 	sweepParams.calc_niter();
 	sweepParams.savestate(direction, restartsize);
 	restart(sweep_tol, reset_iter);
+      cout<<"BACKWARD\n";
       }
       else 
-	dmrg(sweep_tol);
+      {
+        cout<<"dmrg(sweep_tol);\n";
+	      dmrg(sweep_tol);
+      }
+      
     }
     if (dmrginp.calc_type() == ONEPDM) 
       Npdm::npdm(NPDM_ONEPDM);
@@ -590,8 +600,8 @@ int calldmrg(char* input, char* output)
 #ifndef SERIAL
   }
 
-  //world.barrier();
-  sleepBarrier(world, 0, 10);
+  world.barrier();
+  //sleepBarrier(world, 0, 10);
   MPI_Comm_free(&Calc);
   sched_setaffinity(0, sizeof(oldmask), oldmask);
 #endif

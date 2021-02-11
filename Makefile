@@ -8,16 +8,16 @@
 # change to icpc for Intel
 #CXX = clang++
 #MPICXX = mpiicpc
-CXX = g++
-MPICXX = mpic++
+CXX = /scratch/sivkov/cp2k/tools/toolchain/install/gcc-9.2.0/bin/g++
+MPICXX = /scratch/sivkov/cp2k/tools/toolchain/install/openmpi-4.0.2/bin/mpic++
 export CXX
 export MPICXX
 
 # BOOST include directory
 #BOOSTDIR=/software/StackBlock/boost_1_58_0
 #BOOSTINCLUDE = ${BOOSTDIR}/include
-BOOSTDIR=/usr/lib
-BOOSTINCLUDE =/usr/include
+#BOOSTDIR=/usr/lib
+#BOOSTINCLUDE =/usr/include
 
 # set to yes if using BOOST version >= 1.56.0
 USE_BOOST56 = yes
@@ -30,16 +30,19 @@ endif
 #BOOSTLIB = -L/home/sharma/apps/boost/boost_1_55_0/stage/lib -lboost_serialization -lboost_system -lboost_filesystem 
 #BOOSTLIB = -lboost_serialization -lboost_system -lboost_filesystem
 #BOOSTLIB = -L${BOOSTDIR}/lib -lboost_system-mt -lboost_filesystem-mt -lboost_serialization-mt
+
 # Note: Newer boost libraries are typically thread-safe => "-mt" suffix not required. 
-BOOSTLIB = -L${BOOSTDIR}/lib -lboost_system -lboost_filesystem -lboost_serialization
+BOOSTDIR=/scratch/sivkov/boost_1_74_0_build
+BOOSTLIB=-L${BOOSTDIR}/lib -Wl,-rpath=${BOOSTDIR}/lib -lboost_serialization -lboost_system -lboost_filesystem -lboost_mpi
+BOOSTINCLUDE=${BOOSTDIR}/include
 
 #LAPACKBLAS = -lblas -llapack
 #LAPACKBLAS =    /usr/lib/liblapack.dylib /usr/lib/libblas.dylib
-LAPACKBLAS = 
+LAPACKBLAS =  -L'/scratch/sivkov/cp2k/tools/toolchain/install/openblas-0.3.7/lib' -Wl,-rpath='/scratch/sivkov/cp2k/tools/toolchain/install/openblas-0.3.7/lib' -lopenblas_omp -lrt -lm -ldl
 
 # set if we will use MPI or OpenMP
-USE_MPI = no
-OPENMP = no
+USE_MPI = yes
+OPENMP = yes
 
 # FLAGS for linking in MKL
 USE_MKL = no
@@ -136,7 +139,8 @@ ifeq (icpc, $(CXX))
    endif
 endif
 
-ifeq (g++, $(CXX))
+ifneq (,$(findstring g++,$(CXX)))
+#ifeq (g++, $(CXX))
    ifeq ($(OPENMP), yes)
       OPENMP_FLAGS= -fopenmp 
 	#ifeq ($(USE_MPI), yes)
@@ -144,8 +148,8 @@ ifeq (g++, $(CXX))
 	#endif
    endif
 # GNU compiler
-   OPT = -DNDEBUG -O2 -g -funroll-loops -Werror -Wno-error=deprecated-declarations -fdiagnostics-color=always
-#   OPT = -g -pg
+    OPT = -DNDEBUG -O3 -g -funroll-loops -Werror -Wno-error=deprecated-declarations -fdiagnostics-color=always
+   #OPT = -O0 -g -pg
 endif
 
 ifeq (clang++, $(CXX))
